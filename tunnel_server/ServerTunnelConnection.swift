@@ -100,11 +100,12 @@ class ServerTunnelConnection: Connection {
 		}
 
 		// Connect the socket to the UTUN kernel control.
-		var socketAddressControl = sockaddr_ctl(sc_len: UInt8(MemoryLayout<sockaddr_ctl>.size), sc_family: UInt8(AF_SYSTEM), ss_sysaddr: UInt16(AF_SYS_CONTROL), sc_id: controlIdentifier, sc_unit: 0, sc_reserved: (0, 0, 0, 0, 0))
-
+        var socketAddressControl = sockaddr_ctl(sc_len: UInt8(MemoryLayout<sockaddr_ctl>.size), sc_family: UInt8(AF_SYSTEM), ss_sysaddr: UInt16(AF_SYS_CONTROL), sc_id: controlIdentifier, sc_unit: 0, sc_reserved: (0, 0, 0, 0, 0))
+        
+        let socklen = socklen_t(MemoryLayout.size(ofValue: socketAddressControl))
 		let connectResult = withUnsafePointer(to: &socketAddressControl) {
             $0.withMemoryRebound(to: sockaddr.self, capacity: 1, { (sockaddrPtr)  in
-                connect(utunSocket, sockaddrPtr, socklen_t(MemoryLayout.size(ofValue: socketAddressControl)))
+                connect(utunSocket, sockaddrPtr, socklen)
             })
 //			connect(utunSocket, UnsafePointer<sockaddr>($0), socklen_t(MemoryLayout.size(ofValue: socketAddressControl)))
 		}
