@@ -30,14 +30,16 @@ class ContentFilterController: UITableViewController {
 	// MARK: Initializers
 
 	deinit {
-		FilterUtilities.defaults?.removeObserver(self, forKeyPath: "rules", context:nil)
+        var context = self
+		FilterUtilities.defaults?.removeObserver(self, forKeyPath: "rules", context:&context)
 	}
 
 	// MARK: UIViewController
 
 	/// Handle the event where the view is loaded into memory.
 	override func viewDidLoad() {
-		FilterUtilities.defaults?.addObserver(self, forKeyPath: "rules", options: NSKeyValueObservingOptions.initial, context:nil)
+        var context = self
+		FilterUtilities.defaults?.addObserver(self, forKeyPath: "rules", options: NSKeyValueObservingOptions.initial, context:&context)
 
 		statusCell.valueChanged = {
 			if self.statusCell.isOn && NEFilterManager.shared().providerConfiguration == nil {
@@ -97,7 +99,8 @@ class ContentFilterController: UITableViewController {
 
 	/// Handle changes to the rules
 	override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-		if keyPath == "rules" {
+        let val = context?.assumingMemoryBound(to: Optional<ContentFilterController>.self).pointee
+		if val == self && keyPath == "rules" {
 			reloadRules()
 		} else {
 			super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
